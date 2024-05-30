@@ -15,7 +15,6 @@ class Controller
     $this->params = $params;
     $this->reqMethod = strtolower($_SERVER['REQUEST_METHOD']);
     $this->body = (array) json_decode(file_get_contents('php://input'));
-
     $this->header();
     $this->ifMethodExist();
   }
@@ -36,14 +35,18 @@ class Controller
 
   protected function header()
   {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Headers : Content-Type');
-    header('Access-Control-Allow-Methods : PUT, DELETE, PATCH, POST, OPTIONS');
-    header('Content-type: application/json; charset=utf-8');
+
     if ($this->reqMethod === "options") {
-      header('Access-Control-Max-Age : 86400');
+      header('Access-Control-Allow-Origin: *');
+      header('Access-Control-Allow-Headers : Content-Type, Authorization');
+      header('Access-Control-Allow-Methods : GET, PUT, DELETE, PATCH, POST, OPTIONS');
+      header('Content-type: application/json; charset=utf-8');
       exit;
     }
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Headers : Content-Type, Authorization');
+    header('Access-Control-Allow-Methods : GET, PUT, DELETE, PATCH, POST, OPTIONS');
+    header('Content-type: application/json; charset=utf-8');
   }
 
   protected function ifMethodExist()

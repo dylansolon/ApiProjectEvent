@@ -7,36 +7,52 @@ use stdClass;
 
 class UserModel extends SqlConnect
 {
-  public function add(array $data)
-  {
-    $query = "
-        INSERT INTO users (first_name, last_name, promo, school)
-        VALUES (:firstname, :lastname, :promo, :school)
-      ";
 
-    $req = $this->db->prepare($query);
-    $req->execute($data);
+  public function login(array $data)
+  {
+    $mail = $data['mail'];
+    $password = $data['password'];
+
+    $req = $this->db->prepare("SELECT * FROM users WHERE mail = :mail");
+    $req->execute(["mail" => $mail]);
+    $user = $req->fetch(PDO::FETCH_ASSOC);
+
+    /*     if (!$user || !password_verify($password, $user['password'])) {
+      return false;
+    } */
+
+    return $user;
   }
 
-  public function delete(int $id)
+  public function create(array $data): bool
   {
-    $req = $this->db->prepare("DELETE FROM users WHERE id = :id");
-    $req->execute(["id" => $id]);
+    $name = $data['name'];
+    $mail = $data['mail'];
+    $password = $data['password'];
+
+    if (!$this->exists($mail)) {
+      $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+      $query = "INSERT INTO users (name, mail, password) VALUES (:name, :mail, :password)";
+      $response = $this->db->prepare($query);
+      $response->execute([
+        ':name' => $name,
+        ':mail' => $mail,
+        ':password' => $hashedPassword,
+      ]);
+
+      return true;
+    }
+
+    return false;
   }
 
-  public function get(int $id)
+  public function exists(string $mail): bool
   {
-    $req = $this->db->prepare("SELECT * FROM users WHERE id = :id");
-    $req->execute(["id" => $id]);
+    $query = "SELECT COUNT(*) FROM users WHERE mail = :mail";
+    $response = $this->db->prepare($query);
+    $response->execute([':mail' => $mail]);
 
-    return $req->rowCount() > 0 ? $req->fetch(PDO::FETCH_ASSOC) : new stdClass();
-  }
-
-  public function getLast()
-  {
-    $req = $this->db->prepare("SELECT * FROM users ORDER BY id DESC LIMIT 1");
-    $req->execute();
-
-    return $req->rowCount() > 0 ? $req->fetch(PDO::FETCH_ASSOC) : new stdClass();
+    return $response->fetchColumn() > 0;
   }
 }

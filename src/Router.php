@@ -16,7 +16,7 @@ class Router {
     (array) $params = [];
     (array) $urlParts = explode('/', trim($url, '/'));
     (array) $ruleParts = explode('/', trim($rule, '/'));
-
+    
     foreach ($ruleParts as $index => $rulePart) {
       if (strpos($rulePart, ':') === 0 && isset($urlParts[$index])) {
         $paramName = substr($rulePart, 1);
